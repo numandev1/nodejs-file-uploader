@@ -1,4 +1,5 @@
 const express = require('express');
+var throttle = require('express-throttle-bandwidth');
 const contentType = require('content-type');
 const {writeFile} = require('fs');
 const getRawBody = require('raw-body');
@@ -6,6 +7,9 @@ const multer = require('multer');
 const path = require('path');
 const bodyParser = require('body-parser');
 const app = express();
+
+// uncomment below line if you want to simulate slow uploading on local
+// app.use(throttle(29999999))
 
 // Define where to store uploaded files
 const storage = multer.memoryStorage();
@@ -30,7 +34,8 @@ const uploadFile = (fileName, fileBuffer, method = 'post', req, res) => {
   const savePath = path.resolve(
     __dirname,
     '..',
-    `tmp/raw/${method}RequestFile.${fileExtension}`,
+    `tmp/raw/${fileName}`,
+    // `tmp/raw/${method}RequestFile.${fileExtension}`,
   );
   console.log(`Writing to: ${savePath}`);
 
@@ -69,7 +74,7 @@ app.put('/upload/:file_name', function (req, res, next) {
     req,
     {
       length: req.headers['content-length'],
-      limit: '100mb',
+      limit: '1000mb',
       encoding: contentType.parse(req).parameters.charset,
     },
     function (err, string) {
